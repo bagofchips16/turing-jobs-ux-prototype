@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Turing Jobs — UX prototype v2</title>
+<link rel="icon" href="data:,">
 <style>
 :root{--ink:#151719;--muted:#58606a;--paper:#f5f2eb;--panel:#fffefa;--line:#c9c4b9;--soft:#ebe7de;--blue:#1748d4;--blue-dark:#1139ad;--blue-soft:#e8edff;--green:#156b51;--amber:#8b4e00;--danger:#a42d26;--danger-soft:#fdecea;--shadow:0 12px 35px rgba(27,29,32,.14);--stick:132px}
 *{box-sizing:border-box}
@@ -103,7 +104,7 @@ input[type=text],input[type=email],input[type=search],select,textarea{min-height
 textarea{min-height:130px}
 .detail{position:sticky;top:var(--stick);height:calc(100vh - var(--stick) - 16px);overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel);box-shadow:var(--shadow)}
 .detail-top{display:none}
-.detail-inner{padding:24px}
+.detail-inner{padding:24px 24px calc(24px + var(--consent-h,0px))}
 .kicker{color:var(--blue);font:800 12px ui-monospace,"Cascadia Mono",monospace;text-transform:uppercase;letter-spacing:.08em}
 .detail h2{margin:8px 0 8px;font:700 clamp(26px,2.6vw,38px)/1.05 Georgia,serif;letter-spacing:-.02em}
 .detail h2:focus{outline:none}
@@ -150,7 +151,7 @@ textarea{min-height:130px}
 .review-block dl{margin:0;display:grid;grid-template-columns:150px 1fr;gap:4px 12px;font-size:14px}
 .review-block dt{color:var(--muted)}.review-block dd{margin:0;overflow-wrap:anywhere}
 .nav-actions{display:flex;justify-content:space-between;gap:8px;margin-top:22px;flex-wrap:wrap}
-.consent{position:fixed;right:20px;bottom:20px;z-index:45;width:min(440px,calc(100vw - 40px));padding:18px;border:1px solid var(--ink);border-radius:12px;background:var(--panel);box-shadow:var(--shadow)}
+.consent{position:fixed;right:20px;bottom:20px;z-index:70;width:min(440px,calc(100vw - 40px));padding:18px;border:1px solid var(--ink);border-radius:12px;background:var(--panel);box-shadow:var(--shadow)}
 .consent h2{margin:0 0 6px;font:700 20px Georgia,serif}
 .consent p{margin:0 0 12px;color:var(--muted);font-size:14px}
 .consent-actions{display:flex;gap:8px;flex-wrap:wrap}
@@ -195,7 +196,7 @@ body.surface-open{overflow:hidden}
   .filters{display:none}
   .facts{grid-template-columns:1fr}
   .glance{grid-template-columns:1fr}
-  .detail-inner{padding:18px 16px}
+  .detail-inner{padding:18px 16px calc(18px + var(--consent-h,0px))}
   .apply-block{margin:0 -16px 12px;padding:8px 16px 4px}
   dialog.sheet{width:100%;max-width:none;margin:auto 0 0;border-radius:18px 18px 0 0;max-height:92vh}
   .consent{left:10px;right:10px;bottom:10px;width:auto}
@@ -399,11 +400,12 @@ function go(hash,{replace=false}={}){
   onRoute();
 }
 addEventListener('popstate',e=>{
-  scrollMemo[prevRoute?._hash||'']=scrollMemo[prevRoute?._hash||''];
+  if(prevRoute)scrollMemo[prevRoute._hash]=scrollY;
   if(e.state&&typeof e.state.d==='number')depth=e.state.d;else{depth++;history.replaceState({d:depth},'')}
   onRoute({pop:true});
 });
 history.replaceState({d:0},'');
+history.scrollRestoration='manual';
 
 /* ---------- Live announcements, toasts ---------- */
 let liveTimer;
@@ -428,7 +430,7 @@ function renderLedger(){
   $('#ledgerSummary').textContent=`Analytics ${consent.analytics?'ON':'OFF'} · Marketing ${consent.marketing?'ON':'OFF'}${gpc?' · GPC detected':''} · Optional events sent: ${sent} · blocked: ${blocked} · Cookie/storage entries: ${storageCount()}`;
   $('#ledger').innerHTML=ledger.map(e=>`<div class="${e.ok?'sent':'blocked'}">${e.ok?'SENT   ':'BLOCKED'} ${esc(e.name)} ${esc(JSON.stringify(e.props))}</div>`).join('')||'No events yet.';
 }
-function setConsent(a,m,decided=true){consent={decided,analytics:a,marketing:m};$('#consent').hidden=decided;document.body.style.paddingBottom=decided?'':$('#consent').offsetHeight+'px';renderLedger()}
+function setConsent(a,m,decided=true){consent={decided,analytics:a,marketing:m};$('#consent').hidden=decided;const h=decided?'':$('#consent').offsetHeight+'px';document.body.style.paddingBottom=h;document.documentElement.style.setProperty('--consent-h',h||'0px');renderLedger()}
 $('#acceptConsent').onclick=()=>{setConsent(true,true);announce('All optional technologies accepted.')};
 $('#rejectConsent').onclick=()=>{setConsent(false,false);announce('Non-essential technologies rejected. Search, saving and applying are unaffected.')};
 $('#manageConsent').onclick=openPrefs;$('#openPrefs').onclick=openPrefs;
