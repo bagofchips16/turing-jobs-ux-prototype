@@ -1,0 +1,786 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Turing Jobs — UX prototype v2</title>
+<style>
+:root{--ink:#151719;--muted:#58606a;--paper:#f5f2eb;--panel:#fffefa;--line:#c9c4b9;--soft:#ebe7de;--blue:#1748d4;--blue-dark:#1139ad;--blue-soft:#e8edff;--green:#156b51;--amber:#8b4e00;--danger:#a42d26;--danger-soft:#fdecea;--shadow:0 12px 35px rgba(27,29,32,.14);--stick:132px}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--ink);background:var(--paper);font-family:"Aptos","Segoe UI",system-ui,sans-serif;line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--blue)}
+:focus-visible{outline:3px solid #b86e00;outline-offset:2px;box-shadow:0 0 0 5px #fff}
+[hidden]{display:none!important}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+.skip{position:fixed;z-index:200;left:16px;top:-80px;padding:12px 16px;background:var(--ink);color:#fff;border-radius:8px}
+.skip:focus{top:12px}
+.proto-note{padding:8px 16px;color:#fff;background:var(--ink);font:600 12px/1.4 ui-monospace,"Cascadia Mono",monospace;text-align:center}
+.proto-note a{color:#fff}
+.site-header{min-height:64px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px;padding:8px 28px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font:700 23px Georgia,serif;min-height:44px}
+.brand-mark{width:27px;height:27px;display:grid;place-items:center;border-radius:50%;background:var(--ink);color:#fff;font:700 14px Georgia,serif}
+.primary-nav{display:flex;gap:6px;margin-right:auto}
+.primary-nav a{display:inline-flex;align-items:center;min-height:44px;padding:0 10px;color:var(--muted);text-decoration:none;font-size:14px}
+.primary-nav a[aria-current="page"]{color:var(--ink);font-weight:800;text-decoration:underline;text-underline-offset:6px}
+.header-actions{display:flex;align-items:center;gap:10px;font-size:13px}
+.button{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--ink);border-radius:9px;padding:8px 16px;background:var(--panel);cursor:pointer;font-weight:700;min-height:44px;min-width:44px;text-decoration:none;color:var(--ink)}
+.button:hover{background:var(--soft)}
+.button.primary{color:#fff;background:var(--blue);border-color:var(--blue)}
+.button.primary:hover{background:var(--blue-dark)}
+.button[disabled],.button[aria-disabled="true"]{cursor:not-allowed;color:#5d6269;background:#e4e1d8;border-color:#a9a59b}
+.button.quiet{border-color:transparent;background:transparent;color:var(--blue)}
+.mobile-only{display:none}
+.hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.65fr);gap:32px;align-items:end;padding:30px max(28px,calc((100vw - 1500px)/2));border-bottom:1px solid var(--line);background:var(--panel)}
+.eyebrow{color:var(--blue);font:700 12px ui-monospace,"Cascadia Mono",monospace;text-transform:uppercase;letter-spacing:.1em}
+h1{margin:9px 0 8px;font:700 clamp(32px,4vw,56px)/1 Georgia,serif;letter-spacing:-.035em}
+.hero p{margin:0;color:var(--muted);max-width:680px}
+.search-wrap label{display:block;margin-bottom:8px;font-size:14px;font-weight:800}
+.search-box{display:flex;gap:8px}
+.search-box input{width:100%;min-height:48px;padding:0 14px;border:1px solid var(--ink);border-radius:9px;background:#fff}
+.search-help{display:block;margin-top:7px;color:var(--muted);font-size:13px}
+.toolbar{min-height:66px;padding:10px max(24px,calc((100vw - 1500px)/2));display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px;border-bottom:1px solid var(--line);background:#f5f2ebf5;position:sticky;top:64px;z-index:20}
+.result-count{margin:0;margin-right:auto;font-weight:800}
+.active-chips{display:flex;gap:6px;flex-wrap:wrap;list-style:none;margin:0;padding:0}
+.chip{display:inline-flex;align-items:center;gap:2px;min-height:36px;padding:0 4px 0 12px;border:1px solid #9fb0e6;border-radius:99px;background:var(--blue-soft);color:#1b3a96;font-size:13px;font-weight:700}
+.chip button{border:0;background:none;cursor:pointer;color:inherit;min-width:36px;min-height:36px;border-radius:99px;font-size:16px}
+.sort-wrap{display:flex;align-items:center;gap:8px;font-size:14px}
+.sort-wrap select{min-height:44px;padding:0 10px;border:1px solid var(--ink);border-radius:8px;background:var(--panel)}
+.workspace{display:grid;grid-template-columns:260px minmax(380px,1fr) minmax(400px,.95fr);gap:18px;align-items:start;padding:18px max(24px,calc((100vw - 1500px)/2)) 70px}
+.filters{position:sticky;top:var(--stick);max-height:calc(100vh - var(--stick) - 16px);overflow:auto;padding:18px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.panel-head h2{margin:0;font:700 19px Georgia,serif}
+.text-action{border:0;background:none;padding:0 8px;min-height:44px;color:var(--blue);cursor:pointer;font-weight:800;text-decoration:underline}
+fieldset{margin:0;padding:12px 0;border:0;border-top:1px solid var(--line)}
+fieldset:first-of-type{border-top:0}
+legend{padding:0;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.07em}
+.check{display:flex;align-items:center;gap:10px;min-height:44px;color:#2b2f34;font-size:14px;cursor:pointer}
+.check input{width:20px;height:20px;flex:none;accent-color:var(--blue)}
+.check .count{color:var(--muted);margin-left:auto;font-variant-numeric:tabular-nums}
+.results-col{min-width:0}
+.results-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.card{position:relative;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+.card:hover{border-color:#8d887e;box-shadow:0 6px 18px rgba(27,29,32,.08)}
+.card.selected{border:2px solid var(--blue)}
+.card.closed{background:#f1eee6}
+.card-body{padding:16px 64px 14px 16px}
+.card-top{display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px;margin-bottom:8px}
+.badge{display:inline-flex;align-items:center;min-height:24px;padding:2px 8px;border-radius:5px;background:#fff1d2;color:var(--amber);font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+.badge.new{background:#dff3ea;color:var(--green)}
+.badge.featured{background:#ececf8;color:#3b3c8f}
+.badge.closed{background:#e5e1d8;color:#3d4147}
+.posted{color:var(--muted);font-size:13px}
+.deadline{color:var(--amber);font-weight:700;font-size:13px}
+.card h3{margin:0 0 6px;font:700 20px/1.2 Georgia,serif}
+.card-link{color:var(--ink);text-decoration:none}
+.card-link:hover{text-decoration:underline}
+.card-link::after{content:"";position:absolute;inset:0;border-radius:12px}
+.card-link:focus-visible{outline:none;box-shadow:none}
+.card-link:focus-visible::after{outline:3px solid #b86e00;outline-offset:2px}
+.match{margin:0 0 10px;color:var(--muted);font-size:13px}
+.match mark{background:#fff3b0;color:inherit;padding:0 2px}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin:0}
+.facts div{min-width:0}
+.facts dt{color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+.facts dd{margin:0;font-size:14px;font-weight:600;overflow-wrap:anywhere}
+.np{color:var(--muted);font-style:italic;font-weight:400}
+.referral{margin:12px 0 0;padding-top:10px;border-top:1px dashed var(--line);color:var(--muted);font-size:13px}
+.referral strong{color:var(--ink)}
+.save{position:absolute;right:8px;top:8px;z-index:2;width:48px;height:48px;border:1px solid transparent;border-radius:10px;background:transparent;cursor:pointer;font-size:22px;line-height:1}
+.save:hover{background:var(--soft)}
+.save[aria-pressed="true"]{color:var(--blue);background:var(--blue-soft)}
+.save[aria-busy="true"]{opacity:.55}
+.load-more{width:100%;min-height:48px;margin:12px 0 0;border:1px solid var(--ink);border-radius:9px;background:var(--panel);cursor:pointer;font-weight:800}
+.panel{padding:26px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+.panel h3,.panel h2{margin:0 0 8px;font:700 22px Georgia,serif}
+.panel .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.panel.error{border-color:var(--danger);background:var(--danger-soft)}
+.suggest-row{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;padding:0;list-style:none}
+.inline-form{display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin-top:10px}
+.inline-form label{display:block;font-size:13px;font-weight:800;margin-bottom:4px}
+input[type=text],input[type=email],input[type=search],select,textarea{min-height:44px;padding:8px 12px;border:1px solid #6b7078;border-radius:8px;background:#fff;width:100%}
+textarea{min-height:130px}
+.detail{position:sticky;top:var(--stick);height:calc(100vh - var(--stick) - 16px);overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel);box-shadow:var(--shadow)}
+.detail-top{display:none}
+.detail-inner{padding:24px}
+.kicker{color:var(--blue);font:800 12px ui-monospace,"Cascadia Mono",monospace;text-transform:uppercase;letter-spacing:.08em}
+.detail h2{margin:8px 0 8px;font:700 clamp(26px,2.6vw,38px)/1.05 Georgia,serif;letter-spacing:-.02em}
+.detail h2:focus{outline:none}
+.detail-sub{margin:0 0 14px;color:var(--muted)}
+.action-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
+.apply-note{margin:0 0 16px;color:var(--muted);font-size:13px}
+.glance{display:grid;grid-template-columns:1fr 1fr;gap:1px;margin:16px 0 24px;overflow:hidden;border:1px solid var(--line);border-radius:10px;background:var(--line)}
+.glance div{min-height:72px;padding:12px;background:#fdfbf5}
+.glance dt{color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.glance dd{margin:4px 0 0;font-weight:700}
+.glance dd small{display:block;font-weight:400;color:var(--muted)}
+.detail section{margin:22px 0}
+.detail h3{margin:0 0 8px;font:700 19px Georgia,serif}
+.detail ul{margin:0;padding-left:20px}
+.detail li{margin:6px 0}
+.detail .company{padding-top:16px;border-top:1px solid var(--line);color:var(--muted)}
+.referral-box{padding:12px 14px;border:1px dashed #8d887e;border-radius:8px;background:#faf7ee}
+.verified{color:var(--muted);font-size:12px}
+.notice{padding:12px 14px;margin:0 0 14px;border-left:4px solid var(--amber);background:#fff6e3;border-radius:4px}
+.notice.error{border-color:var(--danger);background:var(--danger-soft)}
+.skeleton{display:grid;gap:10px}
+.skeleton i{display:block;height:16px;border-radius:4px;background:linear-gradient(90deg,#e8e4da,#f6f3eb,#e8e4da);background-size:200% 100%;animation:sh 1.2s linear infinite}
+@keyframes sh{to{background-position:-200% 0}}
+.page{max-width:760px;margin:0 auto;padding:32px 20px 80px}
+.page h1{font-size:clamp(28px,4vw,42px);margin:0 0 10px}
+.page-wide{max-width:1000px}
+.stepper{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;list-style:none;margin:0 0 20px;padding:0}
+.stepper li{padding:8px 4px;border-top:4px solid var(--line);color:var(--muted);font-size:13px}
+.stepper li[aria-current="step"]{border-color:var(--blue);color:var(--blue);font-weight:800}
+.stepper li.done{border-color:var(--green);color:var(--green)}
+.form-field{display:grid;gap:6px;margin:16px 0}
+.form-field>label,.form-field>legend{font-weight:800;font-size:14px}
+.form-field .hint{color:var(--muted);font-size:13px}
+.req{color:var(--danger);font-weight:700}
+.err{margin:0;color:var(--danger);font-size:13px;font-weight:700}
+[aria-invalid="true"]{border-color:var(--danger);border-width:2px}
+.err-summary{padding:14px;margin-bottom:16px;border:2px solid var(--danger);border-radius:8px;background:var(--danger-soft)}
+.err-summary h2{font:700 17px Georgia,serif;margin:0 0 6px}
+.err-summary ul{margin:0;padding-left:20px}
+.autosave{color:var(--muted);font-size:13px;margin:0 0 6px}
+.privacy-box{margin:14px 0;padding:12px;border-left:4px solid var(--blue);background:var(--blue-soft);font-size:13px}
+.review-block{padding:14px 0;border-top:1px solid var(--line)}
+.review-block h3{display:flex;justify-content:space-between;align-items:center;margin:0 0 6px;font:700 17px Georgia,serif}
+.review-block dl{margin:0;display:grid;grid-template-columns:150px 1fr;gap:4px 12px;font-size:14px}
+.review-block dt{color:var(--muted)}.review-block dd{margin:0;overflow-wrap:anywhere}
+.nav-actions{display:flex;justify-content:space-between;gap:8px;margin-top:22px;flex-wrap:wrap}
+.consent{position:fixed;right:20px;bottom:20px;z-index:45;width:min(440px,calc(100vw - 40px));padding:18px;border:1px solid var(--ink);border-radius:12px;background:var(--panel);box-shadow:var(--shadow)}
+.consent h2{margin:0 0 6px;font:700 20px Georgia,serif}
+.consent p{margin:0 0 12px;color:var(--muted);font-size:14px}
+.consent-actions{display:flex;gap:8px;flex-wrap:wrap}
+.consent-actions .button{flex:1;min-width:120px}
+dialog{border:0;border-radius:14px;padding:0;width:min(560px,calc(100% - 24px));max-height:90vh;box-shadow:var(--shadow);color:var(--ink);background:var(--panel)}
+dialog::backdrop{background:rgba(20,22,24,.6)}
+.dlg-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line)}
+.dlg-head h2{margin:0;font:700 22px Georgia,serif}
+.dlg-body{padding:16px 20px 8px}
+.dlg-foot{display:flex;gap:8px;justify-content:flex-end;padding:14px 20px;border-top:1px solid var(--line);position:sticky;bottom:0;background:var(--panel)}
+.dlg-foot .button{flex:1}
+.toasts{position:fixed;z-index:300;top:72px;left:50%;transform:translateX(-50%);display:grid;gap:8px;width:min(520px,calc(100vw - 24px))}
+.toast{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:10px;background:var(--ink);color:#fff;box-shadow:var(--shadow);font-size:14px}
+.toast.error{background:#7d1f1a}
+.toast span{flex:1}
+.toast .button{min-height:44px;padding:4px 12px;background:#fff;color:var(--ink)}
+.proto-footer{padding:22px max(24px,calc((100vw - 1500px)/2)) 90px;border-top:1px solid var(--line);background:var(--panel);font-size:14px}
+.proto-footer details{margin-top:14px;border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:#fff}
+.proto-footer summary{cursor:pointer;font-weight:800;min-height:44px;display:flex;align-items:center}
+.scenario-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:0 18px}
+.ledger{font:12px/1.5 ui-monospace,"Cascadia Mono",monospace;background:#151719;color:#e8e8e8;padding:10px 12px;border-radius:8px;margin-top:10px;max-height:160px;overflow:auto}
+.ledger .blocked{color:#ffb3ad}.ledger .sent{color:#9be0b8}
+body.surface-open{overflow:hidden}
+@media (max-width:1099px){
+  .workspace{grid-template-columns:240px minmax(0,1fr)}
+  .detail{display:none;position:fixed;inset:0;z-index:60;width:100%;height:100%;max-height:none;border:0;border-radius:0;box-shadow:none}
+  .detail.surface{display:block}
+  .detail-top{display:flex;position:sticky;top:0;z-index:3;padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--line)}
+  .apply-block{position:sticky;top:61px;z-index:3;margin:0 -24px 12px;padding:8px 24px 4px;background:var(--panel);border-bottom:1px solid var(--line)}
+}
+@media (max-width:740px){
+  .site-header{position:static;padding:6px 14px}
+  .brand{font-size:20px}
+  .primary-nav{order:3;flex-basis:100%;margin:0}
+  .header-actions{margin-left:auto}
+  .hero{display:block;padding:22px 16px 16px}
+  .search-wrap{margin-top:18px}
+  .toolbar{top:0;padding:8px 14px}
+  .active-chips{flex-basis:100%;order:5}
+  .mobile-only{display:inline-flex}
+  .workspace{display:block;padding:12px 12px 80px}
+  .filters{display:none}
+  .facts{grid-template-columns:1fr}
+  .glance{grid-template-columns:1fr}
+  .detail-inner{padding:18px 16px}
+  .apply-block{margin:0 -16px 12px;padding:8px 16px 4px}
+  dialog.sheet{width:100%;max-width:none;margin:auto 0 0;border-radius:18px 18px 0 0;max-height:92vh}
+  .consent{left:10px;right:10px;bottom:10px;width:auto}
+  .stepper{grid-template-columns:repeat(5,1fr);font-size:11px}
+  .stepper li{font-size:11px}
+  .review-block dl{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+<a class="skip" href="#job-results">Skip to job results</a>
+<div class="proto-note">CLICKABLE CONCEPT · Illustrative content only, not live Turing data · <a href="#proto-footer">Prototype scenarios ↓</a></div>
+<header class="site-header" id="siteHeader">
+  <a class="brand" href="#/"><span class="brand-mark" aria-hidden="true">T</span>Turing Jobs</a>
+  <nav class="primary-nav" aria-label="Primary"><a href="#/" id="navFind">Find jobs</a><a href="#/saved" id="navSaved">Saved jobs (<span id="savedCount">0</span>)</a></nav>
+  <div class="header-actions"><span id="whoami" hidden></span><button class="button" id="authButton">Sign in</button></div>
+</header>
+<main id="main">
+<div id="viewBrowse">
+  <section class="hero" aria-labelledby="pageTitle">
+    <div><div class="eyebrow">Remote work · Built around your expertise</div><h1 id="pageTitle">Find AI work worth your time.</h1><p>Compare eligibility, commitment and compensation before you apply, without opening every role.</p></div>
+    <form class="search-wrap" id="searchForm" role="search"><label for="search">Search roles or skills</label><div class="search-box"><input id="search" type="search" maxlength="200" placeholder="Try “software”, “dermatology”, “swe”" autocomplete="off"><button class="button primary" type="submit">Search</button></div><span class="search-help" id="searchHelp">Searches title, skills, category and visible eligibility. Tolerates typos and plurals.</span></form>
+  </section>
+  <div class="toolbar" id="toolbar">
+    <button class="button mobile-only" id="filterButton" aria-haspopup="dialog">Filters<span id="filterCount"></span></button>
+    <p class="result-count" id="resultCount"></p>
+    <ul class="active-chips" id="activeChips" aria-label="Active filters"></ul>
+    <div class="sort-wrap"><label for="sort">Sort by</label><select id="sort"><option value="relevant">Most relevant</option><option value="newest">Newest</option><option value="pay">Highest compensation</option><option value="closing">Closing soon</option></select></div>
+  </div>
+  <div class="workspace" id="workspace">
+    <aside class="filters" id="filtersSide" aria-label="Filters"></aside>
+    <section class="results-col" id="job-results" aria-labelledby="resultsHeading">
+      <h2 class="sr-only" id="resultsHeading" tabindex="-1">Job results</h2>
+      <div id="listBody"></div>
+    </section>
+    <aside class="detail" id="detail" aria-label="Role details">
+      <div class="detail-top"><button class="button" id="detailBack">← Back to results</button></div>
+      <div class="detail-inner" id="detailBody"></div>
+    </aside>
+  </div>
+</div>
+<div id="viewPage" hidden></div>
+</main>
+<footer class="proto-footer" id="proto-footer">
+  <button class="button" id="openPrefs">Privacy preferences</button>
+  <details id="scenarios"><summary>Prototype scenarios &amp; privacy ledger (not part of the product)</summary>
+    <p>Each failure fires once on the next matching action, then clears so Retry succeeds.</p>
+    <div class="scenario-grid" id="scenarioGrid"></div>
+    <h3>Privacy ledger</h3>
+    <p id="ledgerSummary" role="status"></p>
+    <div class="ledger" id="ledger" tabindex="0" aria-label="Telemetry ledger"></div>
+  </details>
+</footer>
+</div>
+
+<section class="consent" id="consent" aria-labelledby="consentTitle">
+  <h2 id="consentTitle">Your privacy, your choice</h2>
+  <p>Core job search, details, saving and applying work without optional tracking. Analytics and marketing stay off unless you opt in. <span id="gpcNote" hidden>Your browser’s Global Privacy Control signal is honored (policy pending Legal review).</span></p>
+  <div class="consent-actions"><button class="button" id="acceptConsent">Accept all</button><button class="button" id="rejectConsent">Reject non-essential</button><button class="button" id="manageConsent">Manage preferences</button></div>
+</section>
+
+<dialog id="filterSheet" class="sheet" aria-labelledby="sheetTitle">
+  <div class="dlg-head"><h2 id="sheetTitle">Filters</h2><button class="text-action" id="sheetClear">Clear all</button></div>
+  <div class="dlg-body" id="sheetBody"></div>
+  <div class="dlg-foot"><button class="button" id="sheetCancel">Cancel</button><button class="button primary" id="sheetApply">Show results</button></div>
+</dialog>
+<dialog id="prefsDialog" aria-labelledby="prefsTitle">
+  <div class="dlg-head"><h2 id="prefsTitle">Privacy preferences</h2><button class="button" id="prefsClose" aria-label="Close without saving">✕</button></div>
+  <div class="dlg-body">
+    <label class="check"><input type="checkbox" checked disabled> Necessary: security, sign-in and core job features (always on)</label>
+    <label class="check"><input type="checkbox" id="prefAnalytics"> Analytics: help us understand how the site is used</label>
+    <label class="check"><input type="checkbox" id="prefMarketing"> Marketing and referral attribution: measure campaigns across sites</label>
+    <p class="privacy-box">Search terms are never sent to advertising or optional analytics. You can change or withdraw these choices at any time from the footer.</p>
+  </div>
+  <div class="dlg-foot"><button class="button" id="prefsRejectAll">Reject non-essential</button><button class="button primary" id="prefsSave">Save preferences</button></div>
+</dialog>
+<div class="toasts" id="toasts"></div>
+<div class="sr-only" id="live" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+const PAGE=6;
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+/* ---------- Data ---------- */
+const CATS={software:'Software engineering',healthcare:'Healthcare',design:'Design & research',science:'Science & math',legal:'Legal',ops:'Operations',language:'Language'};
+const ELIG={global:'Remote · Global',us:'Remote · US only (US work authorization)',india:'Remote · India eligible'};
+const J=(o)=>Object.assign({status:'open',badge:null,closesIn:null,hours:null,volume:null,weeks:null,start:null,ref:null,langs:null,sen:null,eng:null,elig:null},o);
+const JOBS=[
+J({id:'software-ai',title:'Senior Software Engineer — AI Evaluation',cat:'software',badge:'urgent',posted:2,closesIn:14,summary:'Review and improve AI-generated code on production-like software tasks.',skills:['Python','JavaScript','LLM evaluation','Code review'],elig:'us',eng:'Contract',sen:'Senior',weeks:12,hours:[20,30],start:'Within 2 weeks',langs:['English'],pay:{type:'hourly',min:100,max:150,status:'Estimated',cond:'Paid for approved hours, every two weeks. No application fee.'},ref:{amt:500,terms:'Paid after the referred candidate completes 40 approved hours.',exp:'Offer ends Dec 31, 2026'},why:'AI coding assistants need expert reviewers to find defects that automated tests miss.',duties:['Evaluate generated code against functional requirements.','Find correctness, security and maintainability issues.','Write concise, evidence-based feedback.'],must:['5+ years of professional software engineering.','Strong Python or JavaScript.','Professional written English.'],nice:['Experience reviewing LLM output.','Security review background.'],process:'Profile → skills assessment → project match → decision'}),
+J({id:'dermatology',title:'Medical Expert — Dermatology',cat:'healthcare',badge:'new',posted:4,summary:'Evaluate AI-generated dermatology content for clinical accuracy and safety.',skills:['Dermatology','Clinical review','Medical writing'],elig:'global',eng:'Contract',sen:'Senior',weeks:10,hours:[10,20],start:'Within 3 weeks',langs:['English'],pay:{type:'hourly',min:80,max:110,status:'Estimated',cond:'Paid for approved hours, every two weeks.'},ref:{amt:200,terms:'Paid after the referred candidate is onboarded.',exp:'Offer ends Jan 15, 2027'},why:'Health-related AI answers must be reviewed by licensed clinicians before they are trusted.',duties:['Rate AI answers for clinical accuracy.','Flag unsafe or misleading advice.','Write short rationales for each rating.'],must:['Licensed dermatologist or equivalent.','Fluent professional English.'],nice:['Teaching or publication experience.'],process:'Profile → credential check → sample review → decision'}),
+J({id:'image-qa',title:'Image Editing QA',cat:'design',badge:'urgent',posted:0,closesIn:5,summary:'Review image edits for accuracy and photorealism in AI training sets.',skills:['Photoshop','Image QA','Retouching'],elig:'global',eng:'Project',sen:'Mid',weeks:12,volume:'Flexible · about 15–30 tasks per week (varies)',start:'Within 1 week',langs:['English'],pay:{type:'task',min:8,max:14,status:'Estimated',cond:'A task is paid once it passes second-reviewer QA; rejected tasks are not paid. Paid monthly.'},why:'Image-editing models need careful human review of edit accuracy.',duties:['Review edited images against the instructions.','Mark artefacts and instruction misses.'],must:['2+ years of professional image editing.','Attention to detail.'],nice:['Retouching portfolio.'],process:'Profile → qualification task → decision'}),
+J({id:'project-lead',title:'Project Lead — AI Training',cat:'ops',posted:7,summary:'Lead a distributed AI annotation program and manage delivery quality.',skills:['Program delivery','Operations','AI training'],elig:'india',eng:'Contract',sen:'Lead',weeks:26,hours:[40,40],start:'Within 4 weeks',langs:['English','Hindi'],pay:{type:'hourly',min:55,max:75,status:'Guaranteed',cond:'Paid for approved hours, every two weeks.'},ref:{amt:750,terms:'Paid after the referred candidate completes 6 weeks.',exp:'Offer ends Feb 28, 2027'},why:'Annotation programs need a single accountable lead for quality and delivery.',duties:['Plan weekly delivery targets.','Coach annotators and review quality metrics.','Escalate blockers.'],must:['4+ years running delivery teams.','Fluent English.'],nice:['Experience with annotation tooling.'],process:'Profile → interview → decision'}),
+J({id:'hindi-annotator',title:'Multilingual Annotator — Hindi & English',cat:'language',badge:'featured',posted:1,summary:'Annotate and rate bilingual conversations for quality and tone.',skills:['Hindi','English','Annotation'],elig:'global',eng:'Part-time contract',sen:'Mid',hours:[10,15],langs:['Hindi','English'],pay:{type:'none'},why:'Bilingual assistants need native-level human feedback.',duties:['Rate bilingual responses.','Flag translation errors.'],must:['Native Hindi and fluent English.'],nice:[],process:'Profile → language test → decision'}),
+J({id:'earth-science',title:'Earth Science Research Reviewer',cat:'science',posted:9,summary:'Review geoscience and climate reasoning produced by AI systems.',skills:['Geoscience','Remote sensing','Research review'],elig:'global',eng:'Project',sen:'Senior',weeks:8,hours:[5,15],start:'Within 3 weeks',langs:['English'],pay:{type:'hourly',min:70,max:95,status:'Estimated',cond:'Paid for approved hours, every two weeks.'},why:'Scientific answers need verification by domain experts.',duties:['Check AI reasoning against literature.','Document errors with sources.'],must:['PhD or equivalent research experience.'],nice:['Publications.'],process:'Profile → sample review → decision'}),
+J({id:'backend-closed',title:'Backend Engineer — Evaluation Tooling',cat:'software',status:'closed',posted:30,summary:'Build tooling that scores AI model outputs at scale.',skills:['Go','Distributed systems','Evaluation tooling'],elig:'us',eng:'Contract',sen:'Senior',weeks:12,hours:[20,30],langs:['English'],pay:{type:'hourly',min:90,max:130,status:'Estimated',cond:'Paid for approved hours, every two weeks.'},why:'Evaluation needs reliable scoring infrastructure.',duties:['Build scoring services.'],must:['5+ years of backend engineering.'],nice:[],process:'Closed'}),
+J({id:'ux-researcher',title:'UX Researcher — Annotation Tools',cat:'design',posted:6,closesIn:3,summary:'Run usability studies on internal annotation tooling.',skills:['UX research','Usability testing','Writing'],elig:'global',eng:'Part-time contract',sen:'Mid',weeks:6,hours:[10,20],start:'Within 2 weeks',langs:['English'],pay:{type:'hourly',min:45,max:60,status:'Estimated',cond:'Paid for approved hours, every two weeks.'},why:'Annotators work faster with well-researched tools.',duties:['Plan and run usability sessions.','Synthesize findings.'],must:['3+ years in UX research.'],nice:['Experience with data-labeling tools.'],process:'Profile → portfolio review → decision'}),
+J({id:'math-expert',title:'Mathematics Expert — Reasoning Review',cat:'science',badge:'new',posted:3,closesIn:6,summary:'Check step-by-step mathematical reasoning from language models.',skills:['Mathematics','Proof review','Reasoning'],elig:'global',eng:'Contract',sen:'Senior',weeks:10,hours:[10,25],start:'Within 2 weeks',langs:['English'],pay:{type:'hourly',min:60,max:90,status:'Estimated',cond:'Paid for approved hours, every two weeks.'},ref:{amt:300,terms:'Paid after the referred candidate completes 20 approved hours.',exp:'Offer ends Jan 31, 2027'},why:'Reasoning models need expert verification of proofs.',duties:['Verify proofs.','Write corrections.'],must:['Graduate-level mathematics.'],nice:['Competition background.'],process:'Profile → proof test → decision'}),
+J({id:'frontend',title:'Frontend Engineer — Prompt Tools',cat:'software',badge:'new',posted:1,summary:'Build accessible web tools used by prompt engineers and reviewers.',skills:['TypeScript','React','Accessibility'],elig:'global',eng:'Contract',sen:'Mid',weeks:8,hours:[20,40],start:'Within 2 weeks',langs:['English'],pay:{type:'hourly',min:70,max:95,status:'Estimated',cond:'Paid for approved hours, every two weeks.'},why:'Internal tools decide how fast reviewers can work.',duties:['Ship accessible UI features.','Review pull requests.'],must:['3+ years of React and TypeScript.'],nice:['WCAG experience.'],process:'Profile → coding exercise → decision'}),
+J({id:'legal-analyst',title:'Legal Analyst — Contract Review',cat:'legal',posted:12,summary:'Evaluate AI summaries of commercial contracts for accuracy.',skills:['Contract review','Legal writing','Compliance'],elig:'us',eng:'Contract',sen:'Senior',weeks:12,hours:[10,20],start:'Within 3 weeks',langs:['English'],pay:{type:'hourly',min:90,max:120,status:'Estimated',cond:'Paid for approved hours, every two weeks.'},why:'Legal summaries must be checked by trained analysts.',duties:['Compare summaries to contracts.','Flag omissions.'],must:['JD or equivalent; 5+ years of contract work.'],nice:[],process:'Profile → sample review → decision'})
+];
+const byId=id=>JOBS.find(j=>j.id===id);
+
+const FACETS=[
+ {key:'cat',label:'Expertise',opts:Object.entries(CATS),test:(j,v)=>j.cat===v},
+ {key:'loc',label:'Where you can work',opts:[['global','Global remote'],['us','US only'],['india','India eligible']],test:(j,v)=>j.elig===v},
+ {key:'pay',label:'Compensation',opts:[['h50','$50+ per hour'],['h100','$100+ per hour'],['task','Pay per task']],test:(j,v)=>v==='task'?j.pay.type==='task':j.pay.type==='hourly'&&j.pay.min>=(v==='h100'?100:50)},
+ {key:'eng',label:'Engagement',opts:[['Contract','Contract'],['Project','Project'],['Part-time contract','Part-time contract']],test:(j,v)=>j.eng===v},
+ {key:'hrs',label:'Weekly commitment',opts:[['le30','Up to 30 hours'],['gt30','More than 30 hours']],test:(j,v)=>!!j.hours&&(v==='le30'?j.hours[1]<=30:j.hours[1]>30)},
+ {key:'sen',label:'Seniority',opts:[['Mid','Mid'],['Senior','Senior'],['Lead','Lead']],test:(j,v)=>j.sen===v},
+ {key:'lang',label:'Language',opts:[['English','English'],['Hindi','Hindi']],test:(j,v)=>!!j.langs&&j.langs.includes(v)}
+];
+const FLABEL={};FACETS.forEach(f=>f.opts.forEach(([v,l])=>FLABEL[f.key+':'+v]=l));
+
+/* ---------- Search ---------- */
+const norm=s=>String(s).toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^\p{L}\p{N}]+/gu,' ').trim();
+const stem=w=>w.length>3&&w.endsWith('s')?w.slice(0,-1):w;
+const SYN={swe:'software engineer',ml:'machine learning',derm:'dermatology',dev:'developer',eng:'engineer'};
+const tokensOf=s=>norm(s).split(' ').filter(Boolean).map(stem);
+const queryTerms=q=>norm(q.slice(0,200)).split(' ').filter(Boolean).flatMap(t=>SYN[t]?SYN[t].split(' '):[t]).map(stem);
+function lev(a,b){const m=[...Array(a.length+1)].map((_,i)=>[i]);for(let j=1;j<=b.length;j++)m[0][j]=j;for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)m[i][j]=Math.min(m[i-1][j]+1,m[i][j-1]+1,m[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return m[a.length][b.length]}
+const FIELDS=[['Title',60,j=>j.title],['Skills',40,j=>j.skills.join(' ')],['Category',25,j=>CATS[j.cat]],['Eligibility',15,j=>[ELIG[j.elig]||'',(j.langs||[]).join(' '),j.eng||'',j.sen||''].join(' ')],['Summary',10,j=>j.summary]];
+JOBS.forEach(j=>j._idx=FIELDS.map(([n,w,fn])=>({n,w,toks:tokensOf(fn(j))})));
+function termMatch(term,toks){let best=0;for(const t of toks){if(t===term)best=Math.max(best,1);else if(term.length>=3&&t.startsWith(term))best=Math.max(best,.8);else if(term.length>=5&&t.length>=4&&lev(term,t)<=1)best=Math.max(best,.6)}return best}
+function scoreJob(j,terms){
+  if(!terms.length)return {score:0,reasons:[],ok:true};
+  let score=0;const reasons=new Set();
+  for(const term of terms){let tBest=0;for(const f of j._idx){const m=termMatch(term,f.toks);if(m>0){const s=m*f.w;if(s>=6){reasons.add(f.n)}tBest=Math.max(tBest,s)}}
+    if(tBest<6)return {score:0,reasons:[],ok:false};score+=tBest}
+  if(norm(j.title).includes(norm(terms.join(' '))))score+=40;
+  return {score,reasons:[...reasons],ok:true};
+}
+function facetPass(j,f){return FACETS.every(F=>{const v=f[F.key];return !v||!v.length||v.some(x=>F.test(j,x))})}
+const rank=j=>j.status==='closed'?1:0;
+function runSearch(L,facetOverride){
+  const terms=queryTerms(L.q),f=facetOverride||L.f;
+  let items=JOBS.map(j=>({j,...scoreJob(j,terms)})).filter(x=>x.ok&&facetPass(x.j,f));
+  const cmp={
+    relevant:(a,b)=>b.score-a.score||a.j.posted-b.j.posted,
+    newest:(a,b)=>a.j.posted-b.j.posted,
+    pay:(a,b)=>payRank(a.j)-payRank(b.j)||payMax(b.j)-payMax(a.j),
+    closing:(a,b)=>(a.j.closesIn??999)-(b.j.closesIn??999)
+  }[L.sort]||((a,b)=>b.score-a.score);
+  items.sort((a,b)=>rank(a.j)-rank(b.j)||cmp(a,b)||a.j.id.localeCompare(b.j.id));
+  return {items,terms};
+}
+const payRank=j=>j.pay.type==='hourly'?0:j.pay.type==='task'?1:2;
+const payMax=j=>j.pay.max||0;
+function countFor(L,key,val){const f={...L.f,[key]:[val]};return runSearch({...L,f},f).items.length}
+const VOCAB=[...new Set(JOBS.flatMap(j=>j._idx.slice(0,3).flatMap(f=>f.toks)))].filter(t=>t.length>3);
+function suggest(q){const terms=norm(q).split(' ');let changed=false;const out=terms.map(t=>{if(t.length<4||VOCAB.includes(stem(t)))return t;let best=null,bd=3;for(const v of VOCAB){const d=lev(stem(t),v);if(d<bd){bd=d;best=v}}if(best){changed=true;return best}return t});return changed?out.join(' '):null}
+
+/* ---------- Formatting ---------- */
+const NP='<span class="np">Not provided</span>';
+const usd=n=>'$'+n;
+function payText(p){if(p.type==='hourly')return `${usd(p.min)}–${usd(p.max)} USD per hour`;if(p.type==='task')return `${usd(p.min)}–${usd(p.max)} USD per accepted task`;return 'Rate not provided'}
+const payHTML=j=>j.pay.type==='none'?'<span class="np">Rate not provided</span>':esc(payText(j.pay));
+const hoursHTML=j=>j.hours?(j.hours[0]===j.hours[1]?`${j.hours[0]} hours per week`:`${j.hours[0]}–${j.hours[1]} hours per week`):j.volume?esc(j.volume):NP;
+const durHTML=j=>j.weeks?`${j.weeks} weeks`:NP;
+const eligHTML=j=>j.elig?esc(ELIG[j.elig]):NP;
+const typeHTML=j=>[j.eng,j.sen].filter(Boolean).map(esc).join(' · ')||NP;
+const postedText=j=>j.status==='closed'?'Closed':j.posted===0?'Posted today':`Posted ${j.posted} day${j.posted>1?'s':''} ago`;
+const BADGE={urgent:['','Urgently hiring'],new:['new','New'],featured:['featured','Featured · paid placement']};
+
+/* ---------- App state (memory only: no storage before consent) ---------- */
+const auth={in:false,email:''};
+const saved=new Set();
+const loaded=new Set();
+const flags={failList:false,failDetail:false,failSave:false,authTimeout:false,expireSession:false,failUpload:false,failSubmit:false,closeMid:false,duplicate:false};
+const SCEN=[['failList','Next results load fails'],['failDetail','Next role detail load fails'],['failSave','Next save fails'],['authTimeout','Next sign-in times out'],['expireSession','Session expires on next submit'],['failUpload','Next resume upload fails'],['failSubmit','Next submit hits a network error'],['closeMid','Role closes during next submit'],['duplicate','Next submit reports duplicate']];
+const application={data:{name:'',email:'',country:'',years:'',resume:'',linkedin:'',answer:'',availability:'',marketing:false},submitted:{},saveText:'No changes yet'};
+let consent={decided:false,analytics:false,marketing:false};
+const gpc=navigator.globalPrivacyControl===true;
+let route=null,prevRoute=null,depth=0,listKey='',listError=false,detailKey='',detailToken=0,lastFocusedJob=null;
+const scrollMemo={};
+
+/* ---------- Routing (all browse state lives in the URL hash) ---------- */
+function parseHash(){
+  const raw=location.hash.slice(1)||'/';const [path,qs=''] = raw.split('?');const p=new URLSearchParams(qs);
+  const seg=path.split('/').filter(Boolean);
+  const L={q:(p.get('q')||'').slice(0,200),sort:['relevant','newest','pay','closing'].includes(p.get('sort'))?p.get('sort'):'relevant',n:Math.min(60,Math.max(PAGE,parseInt(p.get('n'))||PAGE)),f:{}};
+  FACETS.forEach(F=>{const v=p.get(F.key);L.f[F.key]=v?v.split(',').filter(x=>F.opts.some(o=>o[0]===x)):[]});
+  const r={name:'browse',L,p,job:null,step:null,id:null};
+  if(seg[0]==='job'&&seg[1]){r.job=seg[1]}
+  else if(seg[0]==='saved')r.name='saved';
+  else if(seg[0]==='signin')r.name='signin';
+  else if(seg[0]==='apply'){r.name='apply';r.id=seg[1];r.step=seg[2]||'contact'}
+  else if(seg.length)r.name='notfound';
+  return r;
+}
+function listQS(L){const p=new URLSearchParams();if(L.q)p.set('q',L.q);if(L.sort!=='relevant')p.set('sort',L.sort);FACETS.forEach(F=>{if(L.f[F.key]?.length)p.set(F.key,L.f[F.key].join(','))});if(L.n>PAGE)p.set('n',L.n);return p.toString()}
+const listHash=(L,job)=>{const qs=listQS(L);return '#/'+(job?'job/'+job:'')+(qs?'?'+qs:'')};
+const signinHash=o=>'#/signin?'+new URLSearchParams(o).toString();
+function go(hash,{replace=false}={}){
+  scrollMemo[location.hash||'#/']=scrollY;
+  if(replace)history.replaceState({d:depth},'',hash);else{depth++;history.pushState({d:depth},'',hash)}
+  onRoute();
+}
+addEventListener('popstate',e=>{
+  scrollMemo[prevRoute?._hash||'']=scrollMemo[prevRoute?._hash||''];
+  if(e.state&&typeof e.state.d==='number')depth=e.state.d;else{depth++;history.replaceState({d:depth},'')}
+  onRoute({pop:true});
+});
+history.replaceState({d:0},'');
+
+/* ---------- Live announcements, toasts ---------- */
+let liveTimer;
+function announce(msg,delay=0){clearTimeout(liveTimer);liveTimer=setTimeout(()=>{$('#live').textContent='';requestAnimationFrame(()=>$('#live').textContent=msg)},delay)}
+function toast(msg,{error=false,action=null,onAction=null,ttl=5000}={}){
+  const t=document.createElement('div');t.className='toast'+(error?' error':'');t.setAttribute('role',error?'alert':'status');
+  t.innerHTML=`<span>${esc(msg)}</span>`;
+  if(action){const b=document.createElement('button');b.className='button';b.textContent=action;b.onclick=()=>{t.remove();onAction&&onAction()};t.append(b)}
+  const x=document.createElement('button');x.className='button';x.textContent='Dismiss';x.onclick=()=>t.remove();t.append(x);
+  $('#toasts').append(t);if(!error)setTimeout(()=>t.remove(),ttl);
+}
+
+/* ---------- Consent-aware telemetry ---------- */
+const ledger=[];
+function track(name,props={}){
+  const ok=consent.analytics;ledger.unshift({name,ok,props});if(ledger.length>40)ledger.pop();
+  renderLedger();
+}
+function storageCount(){try{return localStorage.length+sessionStorage.length+(document.cookie?document.cookie.split(';').length:0)}catch{return 0}}
+function renderLedger(){
+  const sent=ledger.filter(e=>e.ok).length,blocked=ledger.length-sent;
+  $('#ledgerSummary').textContent=`Analytics ${consent.analytics?'ON':'OFF'} · Marketing ${consent.marketing?'ON':'OFF'}${gpc?' · GPC detected':''} · Optional events sent: ${sent} · blocked: ${blocked} · Cookie/storage entries: ${storageCount()}`;
+  $('#ledger').innerHTML=ledger.map(e=>`<div class="${e.ok?'sent':'blocked'}">${e.ok?'SENT   ':'BLOCKED'} ${esc(e.name)} ${esc(JSON.stringify(e.props))}</div>`).join('')||'No events yet.';
+}
+function setConsent(a,m,decided=true){consent={decided,analytics:a,marketing:m};$('#consent').hidden=decided;document.body.style.paddingBottom=decided?'':$('#consent').offsetHeight+'px';renderLedger()}
+$('#acceptConsent').onclick=()=>{setConsent(true,true);announce('All optional technologies accepted.')};
+$('#rejectConsent').onclick=()=>{setConsent(false,false);announce('Non-essential technologies rejected. Search, saving and applying are unaffected.')};
+$('#manageConsent').onclick=openPrefs;$('#openPrefs').onclick=openPrefs;
+function openPrefs(){$('#prefAnalytics').checked=consent.analytics;$('#prefMarketing').checked=consent.marketing;$('#prefsDialog').showModal()}
+$('#prefsSave').onclick=()=>{setConsent($('#prefAnalytics').checked,$('#prefMarketing').checked);$('#prefsDialog').close();announce('Privacy preferences saved.')};
+$('#prefsRejectAll').onclick=()=>{setConsent(false,false);$('#prefsDialog').close();announce('Non-essential technologies rejected.')};
+$('#prefsClose').onclick=()=>$('#prefsDialog').close();
+if(gpc){$('#gpcNote').hidden=false}
+
+/* ---------- Filters ---------- */
+function filtersHTML(prefix){
+  return FACETS.map(F=>`<fieldset><legend>${F.label}</legend>${F.opts.map(([v,l])=>`<label class="check"><input type="checkbox" data-facet="${F.key}" value="${esc(v)}" id="${prefix}-${F.key}-${v.replace(/\W/g,'')}"><span>${esc(l)}</span><span class="count" data-count></span></label>`).join('')}</fieldset>`).join('');
+}
+function syncFilters(root,src){
+  $$('input[data-facet]',root).forEach(i=>{const k=i.dataset.facet;i.checked=src.f[k].includes(i.value);i.nextElementSibling.nextElementSibling.textContent=`(${countFor(src,k,i.value)})`});
+}
+$('#filtersSide').innerHTML=`<div class="panel-head"><h2>Filters</h2><button class="text-action" data-clear-all>Clear all</button></div>`+filtersHTML('d');
+$('#sheetBody').innerHTML=filtersHTML('s');
+let draft=null;
+$('#filtersSide').addEventListener('change',e=>{
+  if(!e.target.matches('input[data-facet]'))return;
+  const k=e.target.dataset.facet,L=structuredClone(route.L);L.n=PAGE;
+  L.f[k]=e.target.checked?[...L.f[k],e.target.value]:L.f[k].filter(v=>v!==e.target.value);
+  track('filter_apply',{facet:k});go(listHash(L,route.job));
+});
+$('#sheetBody').addEventListener('change',e=>{
+  if(!e.target.matches('input[data-facet]'))return;
+  const k=e.target.dataset.facet;draft.f[k]=e.target.checked?[...draft.f[k],e.target.value]:draft.f[k].filter(v=>v!==e.target.value);
+  syncFilters($('#sheetBody'),draft);$('#sheetApply').textContent=`Show ${runSearch(draft).items.length} results`;
+});
+$('#filterButton').onclick=()=>{draft=structuredClone(route.L);syncFilters($('#sheetBody'),draft);$('#sheetApply').textContent=`Show ${runSearch(draft).items.length} results`;$('#filterSheet').showModal()};
+$('#sheetClear').onclick=()=>{FACETS.forEach(F=>draft.f[F.key]=[]);syncFilters($('#sheetBody'),draft);$('#sheetApply').textContent=`Show ${runSearch(draft).items.length} results`;announce('All filters cleared in draft.')};
+$('#sheetCancel').onclick=()=>{draft=null;$('#filterSheet').close()};
+$('#filterSheet').addEventListener('cancel',()=>{draft=null});
+$('#sheetApply').onclick=()=>{const L=structuredClone(route.L);L.f=draft.f;L.n=PAGE;draft=null;$('#filterSheet').close();track('filter_apply',{facet:'multiple'});go(listHash(L,route.job))};
+function clearAllHash(){const L=structuredClone(route.L);L.q='';L.n=PAGE;FACETS.forEach(F=>L.f[F.key]=[]);return listHash(L,route.job)}
+document.addEventListener('click',e=>{if(e.target.closest('[data-clear-all]'))go(clearAllHash())});
+
+/* ---------- Search form + sort ---------- */
+let searchDebounce;
+$('#search').addEventListener('input',e=>{clearTimeout(searchDebounce);searchDebounce=setTimeout(()=>{const L=structuredClone(route.L);L.q=e.target.value;L.n=PAGE;go(listHash(L,route.job),{replace:true})},350)});
+$('#searchForm').addEventListener('submit',e=>{e.preventDefault();clearTimeout(searchDebounce);const L=structuredClone(route.L);L.q=$('#search').value;L.n=PAGE;const r=runSearch(L);track('search_submit',{resultCount:r.items.length,queryLength:L.q.length});go(listHash(L,route.job))});
+$('#sort').addEventListener('change',e=>{const L=structuredClone(route.L);L.sort=e.target.value;L.n=PAGE;go(listHash(L,route.job))});
+
+/* ---------- Result cards ---------- */
+function matchLine(it,terms){
+  if(!terms.length)return `<p class="match">${esc(it.j.skills.slice(0,3).join(' · '))}</p>`;
+  return `<p class="match">Matched in: <strong>${it.reasons.map(esc).join(', ')}</strong> — ${esc(it.j.skills.slice(0,3).join(' · '))}</p>`;
+}
+function cardHTML(it,L,terms,selected,mode){
+  const j=it.j,b=BADGE[j.badge],isSaved=saved.has(j.id),closed=j.status==='closed';
+  const saveLabel=`${isSaved?'Remove from saved':'Save'}: ${j.title}${auth.in?'':' (sign-in required)'}`;
+  const href=mode==='saved'?`#/job/${j.id}`:listHash(L,j.id);
+  return `<li class="card ${selected?'selected':''} ${closed?'closed':''}" data-id="${j.id}">
+  <button class="save" data-save="${j.id}" aria-pressed="${isSaved}" aria-label="${esc(saveLabel)}">${isSaved?'♥':'♡'}</button>
+  <div class="card-body">
+    <div class="card-top">${closed?'<span class="badge closed">Closed</span>':b?`<span class="badge ${b[0]}">${b[1]}</span>`:''}<span class="posted">${closed?'This role is no longer accepting applications':postedText(j)}</span>${j.closesIn!=null&&!closed?`<span class="deadline">Closes in ${j.closesIn} days</span>`:''}</div>
+    <h3><a class="card-link" href="${href}" data-job="${j.id}"${selected?' aria-current="true"':''}>${esc(j.title)}</a></h3>
+    ${mode==='saved'?'':matchLine(it,terms)}
+    <dl class="facts"><div><dt>Compensation</dt><dd>${payHTML(j)}</dd></div><div><dt>Eligibility</dt><dd>${eligHTML(j)}</dd></div><div><dt>Duration</dt><dd>${durHTML(j)}</dd></div><div><dt>Commitment</dt><dd>${hoursHTML(j)}</dd></div><div><dt>Engagement</dt><dd>${typeHTML(j)}</dd></div></dl>
+    ${j.ref?`<p class="referral"><strong>Referral bonus: ${usd(j.ref.amt)} USD</strong> — paid to you for referring someone; not part of this role’s pay.</p>`:''}
+  </div></li>`;
+}
+
+/* ---------- Browse view ---------- */
+function renderBrowse(){
+  const L=route.L,{items,terms}=runSearch(L);
+  const key=listQS({...L,n:PAGE});
+  if(key!==listKey){listKey=key;if(flags.failList){flags.failList=false;listError=true;syncScenarios()}else listError=false}
+  const hadFocusId=document.activeElement?.closest?.('#listBody .card')?.dataset.id;
+  const sortEl=$('#sort');sortEl.value=L.sort;
+  const hasDeadline=items.some(x=>x.j.closesIn!=null);
+  sortEl.querySelector('[value=closing]').hidden=!hasDeadline&&L.sort!=='closing';
+  if(document.activeElement!==$('#search'))$('#search').value=L.q;
+  syncFilters($('#filtersSide'),L);
+  const chips=[];
+  if(L.q)chips.push({label:`Search: “${L.q}”`,remove:'q'});
+  FACETS.forEach(F=>L.f[F.key].forEach(v=>chips.push({label:FLABEL[F.key+':'+v],remove:F.key+':'+v})));
+  $('#activeChips').innerHTML=chips.map(c=>`<li class="chip"><span>${esc(c.label)}</span><button data-chip="${esc(c.remove)}" aria-label="Remove filter: ${esc(c.label)}">✕</button></li>`).join('');
+  $('#filterCount').textContent=FACETS.reduce((n,F)=>n+L.f[F.key].length,0)?` (${FACETS.reduce((n,F)=>n+L.f[F.key].length,0)})`:'';
+  const body=$('#listBody');
+  if(listError){
+    $('#resultCount').textContent='Results unavailable';
+    body.innerHTML=`<div class="panel error" role="alert"><h3>We couldn’t load roles</h3><p>Your search and filters are kept. Nothing was lost.</p><div class="actions"><button class="button primary" id="retryList">Retry</button></div></div>`;
+  }else if(!items.length){
+    $('#resultCount').textContent='0 roles';
+    const s=L.q?suggest(L.q):null;
+    const cats=Object.entries(CATS).map(([k,l])=>[k,l,JOBS.filter(j=>j.cat===k&&j.status==='open').length]).filter(x=>x[2]>0&&!L.f.cat.includes(x[0]));
+    body.innerHTML=`<div class="panel"><h3>No roles match</h3>
+      <p>${L.q?`No visible field matched “<strong>${esc(L.q)}</strong>”`:'No role matches the active filters'}${chips.length>(L.q?1:0)?' with these filters applied.':'.'}</p>
+      ${s?`<p>Did you mean <a href="${listHash({...L,q:s,n:PAGE},null)}">${esc(s)}</a>?</p>`:''}
+      ${chips.length?`<p>Remove one constraint:</p><ul class="suggest-row">${chips.map(c=>`<li class="chip"><span>${esc(c.label)}</span><button data-chip="${esc(c.remove)}" aria-label="Remove filter: ${esc(c.label)}">✕</button></li>`).join('')}</ul>`:''}
+      <div class="actions"><button class="button primary" data-clear-all>Clear search and filters</button></div>
+      <h3 style="margin-top:22px">Browse nearby expertise</h3><ul class="suggest-row">${cats.slice(0,4).map(([k,l,n])=>`<li><a class="button" href="#/?cat=${k}">${esc(l)} (${n})</a></li>`).join('')}</ul>
+      <h3 style="margin-top:22px">Get notified</h3><form class="inline-form" id="alertForm"><div><label for="alertEmail">Email for a job alert on this search</label><input id="alertEmail" type="email" autocomplete="email" value="${esc(auth.email)}"></div><button class="button" type="submit">Create alert</button></form><p class="verified">Alert emails are separate from marketing consent and can be stopped at any time.</p></div>`;
+  }else{
+    const vis=items.slice(0,L.n),rem=items.length-vis.length;
+    $('#resultCount').textContent=`${items.length} role${items.length>1?'s':''}${L.q?` for “${L.q}”`:''}`;
+    body.innerHTML=`<ul class="results-list">${vis.map(it=>cardHTML(it,L,terms,route.job===it.j.id)).join('')}</ul>${rem>0?`<button class="load-more" id="loadMore">Show ${Math.min(PAGE,rem)} more — ${rem} remaining</button>`:''}`;
+  }
+  if(!listError)track('search_results_render',{count:items.length});
+  const gone=hadFocusId&&!items.some(x=>x.j.id===hadFocusId);
+  if(gone){$('#resultsHeading').focus();announce(`${items.length} roles shown. The role you were viewing is no longer in the results.`)}
+  else announce(`${items.length} role${items.length===1?'':'s'} shown.`,600);
+  renderDetail(items);
+}
+document.addEventListener('click',e=>{
+  const chip=e.target.closest('[data-chip]');if(chip){const L=structuredClone(route.L),k=chip.dataset.chip;L.n=PAGE;if(k==='q')L.q='';else{const [f,v]=k.split(':');L.f[f]=L.f[f].filter(x=>x!==v)}go(listHash(L,route.job));return}
+  if(e.target.id==='retryList'){listError=false;onRoute();return}
+  if(e.target.id==='loadMore'){const L=structuredClone(route.L);L.n+=PAGE;const before=$$('#listBody .card').length;go(listHash(L,route.job),{replace:true});const cards=$$('#listBody .card-link');(cards[before]||cards.at(-1))?.focus({preventScroll:false});announce(`${cards.length-before} more roles loaded.`);return}
+});
+document.addEventListener('submit',e=>{if(e.target.id==='alertForm'){e.preventDefault();const v=$('#alertEmail').value;if(!$('#alertEmail').checkValidity()||!v){toast('Enter a valid email to create an alert.',{error:true});$('#alertEmail').focus();return}track('job_alert_create',{});toast('Alert created for this search (prototype).')}});
+document.addEventListener('click',e=>{
+  const a=e.target.closest('a[data-job]');
+  if(a){lastFocusedJob=a.dataset.job}
+  const sv=e.target.closest('[data-save]');if(sv)toggleSave(sv.dataset.save,sv);
+});
+
+/* ---------- Save ---------- */
+async function toggleSave(id,btn,{skipAuth=false}={}){
+  if(!auth.in&&!skipAuth){go(signinHash({intent:'save',job:id,ret:location.hash||'#/'}));return}
+  const was=saved.has(id);
+  $$(`[data-save="${id}"],#detailSave`).forEach(b=>{b.setAttribute('aria-busy','true')});announce(was?'Removing…':'Saving…');
+  await wait(450);
+  $$(`[data-save="${id}"],#detailSave`).forEach(b=>b.removeAttribute('aria-busy'));
+  if(flags.failSave){flags.failSave=false;syncScenarios();toast(`Couldn’t ${was?'remove':'save'} “${byId(id).title}”. It was not changed.`,{error:true,action:'Retry',onAction:()=>toggleSave(id,btn)});return}
+  was?saved.delete(id):saved.add(id);
+  track('job_save_change',{saved:!was});
+  announce(was?'Removed from saved jobs.':'Saved.');toast(was?'Removed from saved jobs.':'Saved to your account.');
+  refreshSave();
+}
+function refreshSave(){
+  $('#savedCount').textContent=saved.size;
+  $$('[data-save]').forEach(b=>{const id=b.dataset.save,s=saved.has(id);b.setAttribute('aria-pressed',s);b.textContent=s?'♥':'♡';b.setAttribute('aria-label',`${s?'Remove from saved':'Save'}: ${byId(id).title}${auth.in?'':' (sign-in required)'}`)});
+  const ds=$('#detailSave');if(ds&&ds.dataset.id){const s=saved.has(ds.dataset.id);ds.setAttribute('aria-pressed',s);ds.textContent=s?'♥ Saved':'♡ Save';ds.setAttribute('aria-label',`${s?'Remove from saved':'Save'}: ${byId(ds.dataset.id).title}${auth.in?'':' (sign-in required)'}`)}
+  if(route.name==='saved')renderSaved();
+}
+
+/* ---------- Detail ---------- */
+const narrow=()=>matchMedia('(max-width:1099px)').matches;
+function similar(j){return JOBS.filter(x=>x.status==='open'&&x.id!==j.id&&(x.cat===j.cat||x.elig===j.elig)).slice(0,3)}
+function detailHTML(j){
+  const closed=j.status==='closed',b=BADGE[j.badge];
+  const apply=closed?`<button class="button primary" disabled aria-describedby="applyNote">Applications closed</button>`:auth.in?`<button class="button primary" id="applyBtn">Apply now</button>`:`<button class="button primary" id="applyBtn">Sign in to apply</button>`;
+  const note=closed?'This role has closed. You can still save it and see similar open roles below.':auth.in?'About 8 minutes · 5 steps · resume required · progress is saved to your account.':'You’ll sign in first and return to this role. About 8 minutes · 5 steps · resume required · progress is saved. Saving also needs sign-in.';
+  const s=saved.has(j.id);
+  return `<div class="kicker">${closed?'Closed':b?b[1]:'Open role'} · ${postedText(j)}${j.closesIn!=null&&!closed?` · Closes in ${j.closesIn} days`:''}</div>
+  <h2 id="detailTitle" tabindex="-1">${esc(j.title)}</h2><p class="detail-sub">${esc(j.summary)}</p>
+  ${closed?`<div class="notice" role="status"><strong>This role has closed.</strong> Applying is disabled. Your saved state is kept.</div>`:''}
+  <div class="apply-block"><div class="action-row">${apply}<button class="button" id="detailSave" data-id="${j.id}" aria-pressed="${s}" aria-label="${s?'Remove from saved':'Save'}: ${esc(j.title)}${auth.in?'':' (sign-in required)'}">${s?'♥ Saved':'♡ Save'}</button><button class="button" id="shareBtn">Copy link</button></div>
+  <p class="apply-note" id="applyNote">${note} <a href="#process">What happens next</a></p></div>
+  <h3 class="sr-only">At a glance</h3>
+  <dl class="glance">
+   <div><dt>Compensation</dt><dd>${payHTML(j)}${j.pay.type!=='none'?`<small>${j.pay.status} · ${esc(j.pay.type==='task'?'per accepted task':'for approved hours')}</small>`:''}</dd></div>
+   <div><dt>Eligibility</dt><dd>${eligHTML(j)}</dd></div>
+   <div><dt>Commitment</dt><dd>${hoursHTML(j)}</dd></div>
+   <div><dt>Duration</dt><dd>${durHTML(j)}</dd></div>
+   <div><dt>Start</dt><dd>${j.start?esc(j.start):NP}</dd></div>
+   <div><dt>Engagement</dt><dd>${typeHTML(j)}</dd></div>
+   <div><dt>Languages</dt><dd>${j.langs?esc(j.langs.join(', ')):NP}</dd></div>
+   <div><dt>Hiring process</dt><dd>${esc(j.process)}</dd></div>
+  </dl>
+  <section><h3>Why this role exists</h3><p>${esc(j.why)}</p></section>
+  <section><h3>Responsibilities</h3><ul>${j.duties.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></section>
+  <section><h3>Must have</h3><ul>${j.must.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></section>
+  <section><h3>Nice to have</h3>${j.nice.length?`<ul>${j.nice.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:`<p>${NP}</p>`}</section>
+  <section><h3>Project and payment</h3>
+    <p><strong>Compensation:</strong> ${j.pay.type==='none'?'Rate not provided. Ask the hiring team before accepting work; no rate is assumed.':esc(payText(j.pay))+' ('+j.pay.status.toLowerCase()+').'}</p>
+    ${j.pay.cond?`<p><strong>Payment and acceptance rules:</strong> ${esc(j.pay.cond)}</p>`:''}
+    ${j.ref?`<div class="referral-box"><strong>Referral bonus (separate from pay): ${usd(j.ref.amt)} USD</strong><br>${esc(j.ref.terms)} ${esc(j.ref.exp)}. This is paid to the person who refers, not to you as compensation.</div>`:''}
+  </section>
+  <section id="process" tabindex="-1"><h3>Application process</h3><ol><li>Sign in or create a profile.</li><li>Contact, experience (resume), role questions.</li><li>Review and submit — about 8 minutes, progress saved.</li><li>${esc(j.process)}</li></ol></section>
+  ${closed?`<section><h3>Similar open roles</h3><ul>${similar(j).map(x=>`<li><a href="${listHash(route.L,x.id)}">${esc(x.title)}</a></li>`).join('')}</ul></section>`:''}
+  <section class="company"><h3>About Turing</h3><p>Turing connects global experts with AI development and evaluation projects. Illustrative copy.</p><p class="verified">Role data last verified: Nov 20, 2026 (illustrative)</p></section>`;
+}
+function renderDetail(items){
+  const body=$('#detailBody'),det=$('#detail'),L=route.L;
+  const surface=narrow()&&!!route.job;
+  det.classList.toggle('surface',surface);document.body.classList.toggle('surface-open',surface);
+  ['siteHeader','toolbar','filtersSide','job-results'].forEach(id=>{const el=document.getElementById(id);if(surface)el.setAttribute('inert','');else el.removeAttribute('inert')});
+  $('.hero').toggleAttribute('inert',surface);
+  det.setAttribute('aria-label',surface?'Role details (full screen)':'Role details');
+  const jobId=route.job||(narrow()?null:items[0]?.j.id);
+  if(!jobId){body.innerHTML=`<div class="panel"><h3>Select a role</h3><p>Role details appear here.</p></div>`;detailKey='';return}
+  const key=(route.job?'r:':'p:')+jobId+(flags.failDetail?'!':'');
+  if(key===detailKey&&!(route.job&&!loaded.has(jobId)&&!body.querySelector('#detailTitle')))return refreshDetailActions();
+  detailKey=key;const token=++detailToken;
+  const j=byId(jobId);
+  document.title=(j?j.title+' — ':'')+'Turing Jobs';
+  if(!j){body.innerHTML=`<div class="panel" role="alert"><h2 id="detailTitle" tabindex="-1" style="font-size:26px">This role isn’t available</h2><p>The link may be old or the role may have been removed.</p><div class="actions"><a class="button primary" href="${listHash(L,null)}">Back to results</a></div></div>`;if(surface)$('#detailTitle').focus();return}
+  const show=()=>{if(token!==detailToken)return;body.removeAttribute('aria-busy');body.innerHTML=detailHTML(j);loaded.add(j.id);if(route.job){track('job_detail_open',{});track('application_entry_view',{})}if(surface)$('#detailTitle').focus()};
+  if(route.job&&(!loaded.has(jobId)||flags.failDetail)){
+    body.setAttribute('aria-busy','true');body.innerHTML='<div class="skeleton" aria-label="Loading role"><i style="width:60%"></i><i style="width:90%"></i><i></i><i style="width:80%"></i></div>';
+    announce('Loading role details…');
+    setTimeout(()=>{if(token!==detailToken)return;if(flags.failDetail){flags.failDetail=false;syncScenarios();body.removeAttribute('aria-busy');body.innerHTML=`<div class="panel error" role="alert"><h2 id="detailTitle" tabindex="-1" style="font-size:24px">We couldn’t load this role</h2><p>The results list is unchanged.</p><div class="actions"><button class="button primary" id="retryDetail">Retry</button></div></div>`;detailKey='';if(surface)$('#detailTitle').focus();return}show()},300);
+  }else show();
+}
+function refreshDetailActions(){const ab=$('#applyBtn');if(ab&&!ab.disabled){ab.textContent=auth.in?'Apply now':'Sign in to apply'}}
+document.addEventListener('click',e=>{
+  if(e.target.id==='retryDetail'){detailKey='';onRoute();return}
+  if(e.target.id==='detailSave'){toggleSave(e.target.dataset.id,e.target);return}
+  if(e.target.id==='shareBtn'){const u=location.href.split('#')[0]+'#/job/'+(route.job||'');(navigator.clipboard?.writeText(u)||Promise.reject()).then(()=>toast('Link copied.'),()=>toast('Copy isn’t available here. Copy the address bar link.',{error:true}));return}
+  if(e.target.id==='applyBtn'){const id=route.job||detailKey.slice(2).replace('!','');startApply(id);return}
+  if(e.target.id==='detailBack'){backToList()}
+});
+function backToList(){if(depth>0&&prevRoute&&prevRoute.name==='browse')history.back();else go(listHash(route.L,null),{replace:true})}
+function startApply(id){if(!auth.in)go(signinHash({intent:'apply',job:id,ret:'#/job/'+id+(listQS(route.L)?'?'+listQS(route.L):'')}));else go(`#/apply/${id}/contact`)}
+
+/* ---------- Header / auth ---------- */
+$('#authButton').onclick=()=>{if(auth.in){auth.in=false;auth.email='';updateHeader();refreshSave();announce('Signed out.');if(route.name==='saved'||route.name==='apply')go('#/');else onRoute()}else go(signinHash({intent:'none',ret:location.hash||'#/'}))};
+function updateHeader(){$('#authButton').textContent=auth.in?'Sign out':'Sign in';$('#whoami').hidden=!auth.in;$('#whoami').textContent=auth.in?auth.email:''}
+
+/* ---------- Page views ---------- */
+function showPage(html,focusSel='h1'){$('#viewBrowse').hidden=true;const v=$('#viewPage');v.hidden=false;v.innerHTML=html;const f=$(focusSel,v);if(f){f.setAttribute('tabindex','-1');f.focus({preventScroll:true})}scrollTo(0,0)}
+function renderSaved(){
+  if(!auth.in){showPage(`<div class="page"><h1>Saved roles</h1><div class="panel"><p>Sign in to see the roles you saved.</p><div class="actions"><a class="button primary" href="${signinHash({intent:'none',ret:'#/saved'})}">Sign in</a></div></div></div>`);return}
+  const L={q:'',sort:'relevant',n:60,f:{}};FACETS.forEach(F=>L.f[F.key]=[]);
+  const list=[...saved].map(id=>({j:byId(id),reasons:[]}));
+  showPage(`<div class="page page-wide"><h1>Saved roles</h1>${list.length?`<ul class="results-list">${list.map(it=>cardHTML(it,L,[],false,'saved')).join('')}</ul>`:`<div class="panel"><p>No saved roles yet. Find a role and choose Save.</p><div class="actions"><a class="button primary" href="#/">Find jobs</a></div></div>`}</div>`);
+}
+function renderNotFound(){showPage(`<div class="page"><h1>Page not found</h1><div class="panel"><p>We couldn’t find that page.</p><div class="actions"><a class="button primary" href="#/">Go to job results</a></div></div></div>`)}
+function renderSignin(){
+  const p=route.p,intent=p.get('intent')||'none',id=p.get('job'),j=id?byId(id):null,ret=p.get('ret')||'#/';
+  const ctx=intent==='apply'&&j?`After signing in you’ll continue to <strong>apply for ${esc(j.title)}</strong>.`:intent==='save'&&j?`After signing in we’ll <strong>save ${esc(j.title)}</strong> and bring you back to it.`:'After signing in you’ll return to where you were.';
+  const msg=p.get('msg');
+  showPage(`<div class="page"><h1>Sign in to continue</h1><p>${ctx}</p>${msg?`<div class="notice" role="status">${esc(msg)}</div>`:''}<div id="authErr"></div>
+  <form id="signinForm" novalidate><div class="form-field"><label for="siEmail">Email</label><input id="siEmail" type="email" autocomplete="email" required aria-describedby="siHint"><span class="hint" id="siHint">We’ll use your email to sign you in and send application status updates. Marketing is separate and optional.</span><p class="err" id="siErr" hidden></p></div>
+  <button class="button primary" type="submit" id="siBtn">Sign in (simulated)</button> <a class="button" href="${esc(ret)}">Cancel</a></form></div>`);
+  $('#signinForm').onsubmit=async ev=>{
+    ev.preventDefault();const em=$('#siEmail'),err=$('#siErr');
+    if(!em.value||!em.checkValidity()){err.hidden=false;err.textContent='Enter a valid email address, for example name@example.com.';em.setAttribute('aria-invalid','true');em.setAttribute('aria-describedby','siHint siErr');em.focus();return}
+    $('#siBtn').disabled=true;$('#siBtn').textContent='Signing in…';announce('Signing in…');await wait(600);
+    if(flags.authTimeout){flags.authTimeout=false;syncScenarios();$('#siBtn').disabled=false;$('#siBtn').textContent='Sign in (simulated)';$('#authErr').innerHTML=`<div class="notice error" role="alert" tabindex="-1" id="authTimeout"><strong>Sign-in timed out.</strong> Your role and what you were doing are still saved. Please try again.</div>`;$('#authTimeout').focus();track('application_error',{category:'auth_timeout'});return}
+    auth.in=true;auth.email=em.value;updateHeader();track('authentication_return',{intent,restored:!!j||intent==='none'});
+    if(intent==='save'&&j){go(ret,{replace:true});setTimeout(()=>toggleSave(j.id,null,{skipAuth:true}),50)}
+    else if(intent==='apply'&&j){go(`#/apply/${j.id}/${p.get('step')||'contact'}`,{replace:true})}
+    else go(ret,{replace:true});
+  };
+}
+const STEPS=[['contact','Contact'],['experience','Experience'],['questions','Role questions'],['review','Review'],['done','Confirmation']];
+const COUNTRIES=['','India','United States','United Kingdom','Canada','Germany','Brazil','Other'];
+function stepper(cur){const i=STEPS.findIndex(s=>s[0]===cur);return `<ol class="stepper" aria-label="Application progress">${STEPS.map((s,k)=>`<li class="${k<i?'done':''}" ${k===i?'aria-current="step"':''}>${k<i?'✓ ':''}${k+1}. ${s[1]}<span class="sr-only">${k<i?' (completed)':k===i?' (current step)':''}</span></li>`).join('')}</ol>`}
+function renderApply(){
+  const j=byId(route.id);
+  if(!j){return showPage(`<div class="page"><h1>Role not available</h1><div class="panel"><p>We couldn’t find this role.</p><div class="actions"><a class="button primary" href="#/">Back to results</a></div></div></div>`)}
+  if(!auth.in){return go(signinHash({intent:'apply',job:j.id,step:route.step,ret:'#/job/'+j.id}),{replace:true})}
+  if(j.status==='closed'&&!application.submitted[j.id]){return showPage(closedPanel(j))}
+  const step=route.step,d=application.data;
+  if(step==='done'){if(!application.submitted[j.id])return go(`#/apply/${j.id}/contact`,{replace:true});
+    return showPage(`<div class="page"><h1>Application submitted</h1>${stepper('done')}<div class="panel" role="status"><h2>Thanks, ${esc(d.name||'there')}. You applied to ${esc(j.title)}.</h2><p>We emailed a confirmation to <strong>${esc(d.email)}</strong>.</p><h3 style="margin-top:16px">What happens next</h3><ol><li>${esc(j.process)}</li><li>Typical response time: ${NP} (not yet defined) — we’ll email status changes.</li></ol><div class="actions"><a class="button primary" href="#/">Keep exploring roles</a><a class="button" href="#/saved">Saved roles</a></div></div></div>`)}
+  if(!STEPS.some(s=>s[0]===step))return go(`#/apply/${j.id}/contact`,{replace:true});
+  const stepHTML={
+    contact:()=>`${field('name','Full name',`<input id="f-name" type="text" autocomplete="name" value="${esc(d.name)}" data-bind="name">`)}${field('email','Email',`<input id="f-email" type="email" autocomplete="email" value="${esc(d.email||auth.email)}" data-bind="email">`)}${field('country','Country of residence',`<select id="f-country" data-bind="country" autocomplete="country-name">${COUNTRIES.map(c=>`<option value="${esc(c)}" ${d.country===c?'selected':''}>${c||'Select a country'}</option>`).join('')}</select>`)}
+      <div class="privacy-box"><strong>How we use your data:</strong> We use your email and profile only to run this application and send status updates. You can delete them from your profile at any time. We don’t share them with other companies for their own use.</div>
+      <p><strong>Application status emails:</strong> Required so we can tell you about this application.</p>
+      <label class="check"><input type="checkbox" data-bind="marketing" ${d.marketing?'checked':''}> Optional: send me news about other roles and Turing updates (unchecked by default; not needed to apply)</label>`,
+    experience:()=>`${field('years','Years of relevant experience',`<select id="f-years" data-bind="years"><option value="">Select</option>${['0–2','3–5','6–10','10+'].map(y=>`<option ${d.years===y?'selected':''}>${y}</option>`).join('')}</select>`)}
+      ${field('resume','Resume (PDF or Word)',`<input id="f-resume" type="file" accept=".pdf,.doc,.docx" aria-describedby="resumeStatus"><span class="hint" id="resumeStatus" role="status">${d.resume?`Uploaded: ${esc(d.resume)}`:'No file uploaded yet'}</span>`,true)}
+      ${field('linkedin','Profile link (optional)',`<input id="f-linkedin" type="text" inputmode="url" value="${esc(d.linkedin)}" data-bind="linkedin">`,false,'optional')}`,
+    questions:()=>`${field('answer','Describe a time you found a subtle defect others missed. What did you check?',`<textarea id="f-answer" data-bind="answer" aria-describedby="answerHint">${esc(d.answer)}</textarea><span class="hint" id="answerHint">At least 40 characters.</span>`)}${field('availability','Weekly availability',`<select id="f-availability" data-bind="availability"><option value="">Select</option>${['Under 10 hours','10–20 hours','20–30 hours','30+ hours'].map(y=>`<option ${d.availability===y?'selected':''}>${y}</option>`).join('')}</select>`)}`,
+    review:()=>`<p>Check your details. Nothing is sent until you submit.</p>
+      ${rv('Contact','contact',[['Name',d.name],['Email',d.email],['Country',d.country],['Marketing emails',d.marketing?'Yes':'No']])}
+      ${rv('Experience','experience',[['Experience',d.years],['Resume',d.resume],['Profile link',d.linkedin||'Not provided']])}
+      ${rv('Role questions','questions',[['Answer',d.answer],['Availability',d.availability]])}
+      <div id="submitStatus"></div>`
+  };
+  const idx=STEPS.findIndex(s=>s[0]===step);
+  showPage(`<div class="page"><div class="eyebrow">Applying to</div><p style="margin:0 0 6px"><strong>${esc(j.title)}</strong> · ${payHTML(j)}</p><h1>${STEPS[idx][1]}</h1>${stepper(step)}<p class="autosave" id="autosave" role="status">${esc(application.saveText)}</p><div id="errBox"></div>
+    <form id="applyForm" novalidate>${stepHTML[step]()}
+    <div class="nav-actions"><div>${idx>0?`<a class="button" href="#/apply/${j.id}/${STEPS[idx-1][0]}">Back</a>`:`<a class="button" href="#/job/${j.id}">Cancel</a>`}</div><button class="button primary" type="submit" id="stepBtn">${step==='review'?'Submit application':'Save and continue'}</button></div></form></div>`);
+  wireApply(j,step);
+}
+function field(id,label,ctl,isFile,optional){return `<div class="form-field"><label for="f-${id}">${label}${optional?'':' <span class="req" aria-hidden="true">*</span>'}${optional?' <span class="hint">(optional)</span>':' <span class="sr-only">(required)</span>'}</label>${ctl}<p class="err" id="err-${id}" hidden></p></div>`}
+function rv(title,step,rows){return `<div class="review-block"><h3>${title}<a href="#/apply/${route.id}/${step}" aria-label="Edit ${title}">Edit</a></h3><dl>${rows.map(([k,v])=>`<dt>${k}</dt><dd>${v?esc(v):NP}</dd>`).join('')}</dl></div>`}
+function closedPanel(j){return `<div class="page"><h1>This role has closed</h1><div class="panel error" role="alert"><p>${esc(j.title)} stopped accepting applications. <strong>Your answers are saved</strong> to your profile and nothing was submitted.</p><h3>Similar open roles</h3><ul>${similar(j).map(x=>`<li><a href="#/job/${x.id}">${esc(x.title)}</a></li>`).join('')}</ul><div class="actions"><a class="button primary" href="#/">Back to results</a></div></div></div>`}
+function wireApply(j,step){
+  const form=$('#applyForm'),d=application.data;
+  const touch=()=>{application.saveText='Draft saved just now';const a=$('#autosave');if(a)a.textContent=application.saveText};
+  form.addEventListener('input',e=>{const k=e.target.dataset.bind;if(!k)return;d[k]=e.target.type==='checkbox'?e.target.checked:e.target.value;touch()});
+  form.addEventListener('change',e=>{const k=e.target.dataset.bind;if(k){d[k]=e.target.type==='checkbox'?e.target.checked:e.target.value;touch()}});
+  const fileEl=$('#f-resume');
+  if(fileEl)fileEl.addEventListener('change',async()=>{const f=fileEl.files[0];if(!f)return;const st=$('#resumeStatus');st.textContent='Uploading…';await wait(500);
+    if(flags.failUpload){flags.failUpload=false;syncScenarios();d.resume='';fileEl.value='';st.innerHTML='<span class="err">Upload failed. Your other answers are kept. Choose the file again to retry.</span>';track('application_error',{category:'upload'});return}
+    d.resume=f.name;st.textContent=`Uploaded: ${f.name}`;touch()});
+  form.addEventListener('submit',async e=>{
+    e.preventDefault();
+    const errs=validate(step);showErrors(errs,step);
+    if(errs.length)return;
+    if(step!=='review'){track('application_step_complete',{step});const nxt=STEPS[STEPS.findIndex(s=>s[0]===step)+1][0];return go(`#/apply/${j.id}/${nxt}`)}
+    await submitApplication(j);
+  });
+}
+function validate(step){
+  const d=application.data,e=[];
+  if(step==='contact'){if(!d.name.trim())e.push(['name','Enter your full name.']);if(!d.email||!/^\S+@\S+\.\S+$/.test(d.email))e.push(['email','Enter a valid email, for example name@example.com.']);if(!d.country)e.push(['country','Select your country of residence.'])}
+  if(step==='experience'){if(!d.years)e.push(['years','Select your years of experience.']);if(!d.resume)e.push(['resume','Upload your resume (PDF or Word).'])}
+  if(step==='questions'){if(d.answer.trim().length<40)e.push(['answer','Write at least 40 characters (currently '+d.answer.trim().length+').']);if(!d.availability)e.push(['availability','Select your weekly availability.'])}
+  return e;
+}
+function showErrors(errs,step){
+  $$('.err[id^=err-]').forEach(p=>{p.hidden=true;p.textContent=''});$$('[aria-invalid]').forEach(i=>i.removeAttribute('aria-invalid'));
+  const box=$('#errBox');
+  if(!errs.length){box.innerHTML='';return}
+  box.innerHTML=`<div class="err-summary" role="alert" tabindex="-1" id="errSummary"><h2>Fix ${errs.length} issue${errs.length>1?'s':''} to continue</h2><ul>${errs.map(([k,m])=>`<li><a href="#" data-focus="f-${k}">${esc(m)}</a></li>`).join('')}</ul></div>`;
+  errs.forEach(([k,m])=>{const p=$('#err-'+k),i=$('#f-'+k);if(p){p.hidden=false;p.textContent=m}if(i){i.setAttribute('aria-invalid','true');i.setAttribute('aria-describedby',[i.getAttribute('aria-describedby'),'err-'+k].filter(Boolean).join(' '))}});
+  track('application_error',{category:'validation',step});
+  $('#errSummary').focus();
+}
+document.addEventListener('click',e=>{const a=e.target.closest('[data-focus]');if(a){e.preventDefault();document.getElementById(a.dataset.focus)?.focus()}});
+let submitting=false;
+async function submitApplication(j){
+  if(submitting)return;submitting=true;const btn=$('#stepBtn');btn.disabled=true;btn.textContent='Submitting…';btn.setAttribute('aria-busy','true');announce('Submitting application…');
+  await wait(800);submitting=false;btn.disabled=false;btn.textContent='Submit application';btn.removeAttribute('aria-busy');
+  const st=$('#submitStatus');
+  if(flags.expireSession){flags.expireSession=false;syncScenarios();auth.in=false;updateHeader();track('application_error',{category:'session_expired'});return go(signinHash({intent:'apply',job:j.id,step:'review',msg:'Your session expired. Sign in again — your answers are kept.',ret:'#/job/'+j.id}))}
+  if(flags.closeMid){flags.closeMid=false;syncScenarios();j.status='closed';track('application_error',{category:'role_closed'});return showPage(closedPanel(j))}
+  if(flags.duplicate){flags.duplicate=false;syncScenarios();track('application_error',{category:'duplicate'});st.innerHTML=`<div class="notice error" role="alert" tabindex="-1" id="subErr"><strong>You’ve already applied to this role.</strong> We didn’t create a second application. <a href="#/saved">Go to your saved roles</a></div>`;$('#subErr').focus();return}
+  if(flags.failSubmit){flags.failSubmit=false;syncScenarios();track('application_error',{category:'network'});st.innerHTML=`<div class="notice error" role="alert" tabindex="-1" id="subErr"><strong>We couldn’t reach the server.</strong> Nothing was submitted and your answers are saved. <button class="button" id="retrySubmit" type="button">Retry</button></div>`;$('#subErr').focus();$('#retrySubmit').onclick=()=>submitApplication(j);return}
+  application.submitted[j.id]=true;track('application_step_complete',{step:'review'});go(`#/apply/${j.id}/done`);
+}
+
+/* ---------- Scenario panel ---------- */
+function syncScenarios(){$$('#scenarioGrid input').forEach(i=>i.checked=flags[i.dataset.flag])}
+$('#scenarioGrid').innerHTML=SCEN.map(([k,l])=>`<label class="check"><input type="checkbox" data-flag="${k}"> ${l}</label>`).join('');
+$('#scenarioGrid').addEventListener('change',e=>{flags[e.target.dataset.flag]=e.target.checked});
+
+/* ---------- Route dispatcher ---------- */
+function onRoute({pop=false}={}){
+  prevRoute=route;route=parseHash();route._hash=location.hash||'#/';
+  const isBrowse=route.name==='browse';
+  $$('#navFind,#navSaved').forEach(a=>a.removeAttribute('aria-current'));
+  if(isBrowse)$('#navFind').setAttribute('aria-current','page');else if(route.name==='saved')$('#navSaved').setAttribute('aria-current','page');
+  if(isBrowse){
+    $('#viewPage').hidden=true;$('#viewBrowse').hidden=false;document.title='Find jobs — Turing Jobs';
+    renderBrowse();
+    if(prevRoute&&prevRoute.job&&!route.job&&narrow()&&!pop){const l=$(`a[data-job="${prevRoute.job}"]`);(l||$('#resultsHeading')).focus()}
+    else if(prevRoute&&prevRoute.job&&!route.job&&narrow()&&pop){const l=$(`a[data-job="${prevRoute.job}"]`);(l||$('#resultsHeading')).focus({preventScroll:true})}
+  }else{
+    document.body.classList.remove('surface-open');$('#detail').classList.remove('surface');
+    ['siteHeader','toolbar','filtersSide','job-results'].forEach(id=>document.getElementById(id).removeAttribute('inert'));$('.hero').removeAttribute('inert');
+    detailKey='';
+    ({saved:renderSaved,signin:renderSignin,apply:renderApply,notfound:renderNotFound}[route.name])();
+    document.title={saved:'Saved roles',signin:'Sign in',apply:'Apply',notfound:'Not found'}[route.name]+' — Turing Jobs';
+  }
+  if(pop){const y=scrollMemo[location.hash||'#/'];if(y!=null)requestAnimationFrame(()=>scrollTo(0,y))}
+  else if(isBrowse&&prevRoute&&prevRoute.name!=='browse')scrollTo(0,0);
+  refreshSave();renderLedger();
+}
+addEventListener('resize',()=>{detailKey='';if(route&&route.name==='browse')renderBrowse()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&route.name==='browse'&&route.job&&narrow()&&!document.querySelector('dialog[open]'))backToList()});
+setConsent(gpc?false:false,false,false);
+onRoute();
+</script>
+</body>
+</html>
